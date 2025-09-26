@@ -1,0 +1,14 @@
+# Flask and Web Server related
+Flask
+Flask-SQLAlchemy
+gunicorn  # Рекомендовано для запуску на сервері
+
+# Database Connector
+psycopg2-binary # Для роботи з PostgreSQL
+
+# AI Model SDKs
+google-generativeai
+openai # Для роботи з OpenRouter
+
+# Excel File Handling
+openpyxl

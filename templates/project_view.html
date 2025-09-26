@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Parts of: {{ project.title }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <style> body { padding-top: 1rem; } .container { max-width: 900px; } </style>
+</head>
+<body>
+    <main class="container">
+        <!-- === БЛОК НАВІГАЦІЇ ТА КНОПКИ ЕКСПОРТУ === -->
+        <!-- Новий код -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <nav style="margin-bottom: 0;">
+        <ul>
+            <li><a href="{{ url_for('show_projects_in_category', category_name=project.category) }}">&larr; Back to '{{ project.category }}'</a></li>
+        </ul>
+    </nav>
+
+    <!-- === БЛОК З КНОПКАМИ ЕКСПОРТУ === -->
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{{ url_for('export_project', project_id=project.id) }}" role="button" class="secondary outline">
+            Download .txt
+        </a>
+        <a href="{{ url_for('export_project_xlsx', project_id=project.id) }}" role="button" class="secondary">
+            Download .xlsx
+        </a>
+    </div>
+</div>
+
+        <hgroup>
+            <h1>{{ project.title }}</h1>
+            <h2>List of parts</h2>
+        </hgroup>
+
+        {% for part in parts %}
+        <a href="{{ url_for('translator', part_id=part.id) }}" style="text-decoration: none;">
+            <article>
+                <strong>Part {{ part.part_number }}: {{ part.part_title }}</strong>
+                <br>
+                <small {% if part.ukrainian_text %} style="color:var(--pico-color-green-500);" {% else %} style="color:var(--pico-color-orange-500);" {% endif %}>
+                    Status: {% if part.ukrainian_text %} Translated {% else %} Awaiting translation {% endif %}
+                </small>
+            </article>
+        </a>
+        {% endfor %}
+    </main>
+</body>
+</html>

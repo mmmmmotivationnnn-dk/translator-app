@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects in {{ category_name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <!-- Підключаємо іконки, вони нам знадобляться -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* --- Копіюємо і адаптуємо наші "ВАУ"-стилі --- */
+        :root {
+            --card-hover-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+        }
+
+        /* Стиль самої картки проєкту */
+        .project-card {
+            display: block; /* Робимо всю картку посиланням */
+            text-decoration: none;
+            color: var(--pico-contrast);
+            background-color: var(--pico-card-background-color);
+            border: 1px solid var(--pico-card-border-color);
+            border-radius: var(--pico-border-radius);
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+        }
+
+        /* Ефект при наведенні курсора */
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-hover-shadow);
+            border-color: var(--pico-primary-hover);
+        }
+
+        .project-card h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--pico-primary);
+        }
+
+        .project-card small {
+            color: var(--pico-muted-color);
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('show_categories') }}"><i class="fa-solid fa-arrow-left"></i> Back to Categories</a></li>
+            </ul>
+        </nav>
+        <hgroup>
+            <h1 style="text-align: center;">Projects in: {{ category_name }}</h1>
+        </hgroup>
+
+        {% if projects %}
+            {% for project in projects %}
+                <a href="{{ url_for('show_project_parts', project_id=project.id) }}" class="project-card">
+                    <h3>{{ project.title }}</h3>
+                    <!-- Показуємо, скільки частин у проєкті -->
+                    <small>{{ project.parts|length }} part(s)</small>
+                </a>
+            {% endfor %}
+        {% else %}
+            <article>
+                <p style="text-align: center;">No projects found in this category.</p>
+            </article>
+        {% endif %}
+
+    </main>
+</body>
+</html>

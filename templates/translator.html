@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translator - {{ part.part_title }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- Світла тема --- */
+        :root[data-theme="light"] {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --muted-text-color: #6c757d;
+            --header-color: #000;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --primary-color: #0d6efd;
+            --primary-hover: #0b5ed7;
+            --primary-focus: rgba(13, 110, 253, 0.25);
+            --highlight-bg: rgba(13, 110, 253, 0.15);
+            --button-secondary-bg: #6c757d;
+        }
+        /* --- Темна тема --- */
+        :root[data-theme="dark"] {
+            --bg-color: #1a1b26;
+            --text-color: #a9b1d6;
+            --muted-text-color: #565f89;
+            --header-color: #c0caf5;
+            --card-bg: #24283b;
+            --border-color: #414868;
+            --primary-color: #7aa2f7;
+            --primary-hover: #9eceff;
+            --primary-focus: rgba(122, 162, 247, 0.25);
+            --highlight-bg: rgba(122, 162, 247, 0.2);
+            --button-secondary-bg: #414868;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.7;
+            padding: 1rem 2rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        main.container { max-width: 95%; }
+        h4 { color: var(--header-color); }
+        p { color: var(--muted-text-color); font-size: 0.9em; margin-bottom: 0.5rem; }
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--muted-text-color);
+        }
+        .top-nav a { text-decoration: none; color: var(--primary-color); }
+        .theme-switcher { display: flex; align-items: center; gap: 0.5rem; }
+        .theme-switcher input { display: none; }
+        .theme-switcher label {
+            cursor: pointer;
+            width: 50px; height: 26px;
+            background: var(--button-secondary-bg);
+            display: block; border-radius: 100px;
+            position: relative;
+        }
+        .theme-switcher label:after {
+            content: '';
+            position: absolute; top: 3px; left: 3px;
+            width: 20px; height: 20px;
+            background: #fff; border-radius: 50%;
+            transition: 0.3s;
+        }
+        .theme-switcher input:checked + label:after {
+            left: calc(100% - 3px);
+            transform: translateX(-100%);
+        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+        .editor-column {
+            height: 70vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            white-space: pre-wrap;
+            background-color: var(--card-bg);
+            transition: box-shadow 0.3s, border-color 0.3s;
+        }
+        .editor-column:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-focus);
+        }
+        #english-editor { color: var(--muted-text-color); }
+        .sentence-text {
+            display: inline-block;
+            min-height: 1em;
+            padding: 2px 4px;
+            border-radius: 4px;
+            outline: none;
+            transition: background-color 0.2s;
+            cursor: text;
+        }
+        .sentence-text:focus { background-color: var(--highlight-bg); }
+        .highlighted { background-color: var(--highlight-bg) !important; }
+        .button-group { margin-top: 1.5rem; display: flex; gap: 1rem; }
+        button { background-color: var(--primary-color); border: none; }
+        button:hover { background-color: var(--primary-hover); }
+        button.secondary { background-color: var(--button-secondary-bg); }
+        button i { margin-right: 0.5rem; }
+        .toast {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; visibility: visible; }
+        @media (max-width: 992px) {
+            body { padding: 1rem; }
+            .grid { grid-template-columns: 1fr; }
+            .editor-column { height: 50vh; }
+            .top-nav { flex-direction: column; align-items: flex-start; gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <nav class="top-nav">
+            <a href="{{ url_for('show_project_parts', project_id=part.project_id) }}"><i class="fa-solid fa-arrow-left"></i> Back to project parts</a>
+            <strong>Part {{ part.part_number }}: {{ part.part_title }}</strong>
+            <div class="theme-switcher">
+                <i class="fa-solid fa-sun"></i>
+                <input type="checkbox" id="theme-toggle">
+                <label for="theme-toggle"></label>
+                <i class="fa-solid fa-moon"></i>
+            </div>
+        </nav>
+        <div class="grid">
+            <div>
+                <hgroup>
+                    <h4>English Text (Original)</h4>
+                    <p>This text updates after you sync your changes from the Ukrainian version.</p>
+                </hgroup>
+                <div id="english-editor" class="editor-column"></div>
+            </div>
+            <div>
+                 <hgroup>
+                    <h4>Ukrainian Text (Editable)</h4>
+                    <p>Edit here. Syncs automatically after you stop typing or by pressing the button.</p>
+                 </hgroup>
+                <div id="ukrainian-editor" class="editor-column" tabindex="0"></div>
+            </div>
+        </div>
+        <div class="button-group">
+            <button id="translate-btn"><i class="fa-solid fa-wand-magic-sparkles"></i> Translate All Empty</button>
+            <button id="sync-btn" class="secondary"><i class="fa-solid fa-sync"></i> Sync Edits & Update English</button>
+        </div>
+    </main>
+    <div id="data-container" data-content='{{ part.content_json }}' style="display: none;"></div>
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // === ЛОГІКА ПЕРЕМИКАННЯ ТЕМ ===
+        const themeToggle = document.getElementById('theme-toggle');
+        const docHtml = document.documentElement;
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        docHtml.setAttribute('data-theme', savedTheme);
+        themeToggle.checked = savedTheme === 'dark';
+        themeToggle.addEventListener('change', () => {
+            const newTheme = themeToggle.checked ? 'dark' : 'light';
+            docHtml.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // === ОСНОВНА ЛОГІКА РЕДАКТОРА ===
+        const partId = {{ part.id }};
+        let contentData = JSON.parse(document.getElementById('data-container').dataset.content);
+        const englishEditor = document.getElementById('english-editor');
+        const ukrainianEditor = document.getElementById('ukrainian-editor');
+        const translateBtn = document.getElementById('translate-btn');
+        const syncBtn = document.getElementById('sync-btn');
+        let debounceTimer, highlightedId = null, isSyncing = false;
+
+        function renderEditor(data) {
+            contentData = data;
+            const ukScrollTop = ukrainianEditor.scrollTop;
+            englishEditor.innerHTML = '';
+            ukrainianEditor.innerHTML = '';
+            data.forEach(item => {
+                englishEditor.appendChild(createSentenceElement(item.id, item.en, 'en'));
+                englishEditor.appendChild(createSeparatorElement(item.en_sep));
+                ukrainianEditor.appendChild(createSentenceElement(item.id, item.uk, 'uk'));
+                ukrainianEditor.appendChild(createSeparatorElement(item.uk_sep));
+            });
+            ukrainianEditor.scrollTop = ukScrollTop;
+        }
+
+        // Замініть стару функцію createSentenceElement
+        function createSentenceElement(id, text, lang) {
+            const span = document.createElement('span');
+            span.className = 'sentence-text';
+            span.dataset.id = id;
+            span.textContent = text;
+            if (lang === 'uk') {
+                span.contentEditable = 'true';
+                span.addEventListener('focus', () => highlightPair(id));
+                span.addEventListener('input', (e) => {
+                    // Перевіряємо, чи не змінилась структура (чи не додали/видалили речення)
+                    const currentSentenceCount = ukrainianEditor.querySelectorAll('.sentence-text').length;
+                    const originalSentenceCount = contentData.filter(item => item.text !== '').length;
+
+                    clearTimeout(debounceTimer);
+                    if (currentSentenceCount !== originalSentenceCount) {
+                        // Якщо структура змінилась, авто-синхронізація вимикається.
+                        // Користувач має натиснути кнопку для повної синхронізації.
+                        syncBtn.style.boxShadow = '0 0 15px var(--primary-focus)'; // Підсвічуємо кнопку
+                    } else {
+                        // Якщо просто редагуємо текст, запускаємо швидку синхронізацію
+                        const newText = e.target.textContent;
+                        debounceTimer = setTimeout(() => syncSingleSentence(id, newText), 7000); // Швидше, 7с
+                    }
+                });
+            }
+            return span;
+        }
+
+        function createSeparatorElement(text = ' ') {
+            const span = document.createElement('span');
+            span.innerText = text;
+            return span;
+        }
+
+        function highlightPair(id) {
+            if (highlightedId === id) return;
+            document.querySelectorAll('.highlighted').forEach(el => el.classList.remove('highlighted'));
+            highlightedId = id;
+            if (id !== null) {
+                document.querySelectorAll(`.sentence-text[data-id='${id}']`).forEach(el => el.classList.add('highlighted'));
+            }
+        }
+
+        translateBtn.addEventListener('click', async () => {
+            if (isSyncing) return;
+            setLoadingState(true);
+            const itemsToTranslate = contentData.filter(item => item.text !== '' && (!item.uk || item.uk.trim() === ''));
+            if (itemsToTranslate.length === 0) {
+                showToast("Everything is already translated!");
+                setLoadingState(false);
+                return;
+            }
+            showToast(`Translating ${itemsToTranslate.length} sentences...`);
+            try {
+                const selectedModel = localStorage.getItem('selectedModel') || 'gemini';
+                const response = await fetch('/api/translate_batch', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        content: itemsToTranslate,
+                        model_provider: selectedModel
+                    })
+                });
+                if (!response.ok) throw new Error('Server returned an error.');
+                const result = await response.json();
+                if (result.translated_sentences.length !== itemsToTranslate.length) throw new Error('Mismatch in sentence count.');
+
+                result.translated_sentences.forEach((text, i) => {
+                    itemsToTranslate[i].uk = text;
+                });
+                renderEditor(contentData);
+                showToast(`Translation complete! Ready for review.`);
+            } catch (error) {
+                showToast(`Error: ${error.message}`);
+            } finally {
+                setLoadingState(false);
+            }
+        });
+
+        syncBtn.addEventListener('click', () => {
+            clearTimeout(debounceTimer);
+            syncChanges();
+        });
+
+         // Замініть стару функцію syncChanges
+        async function syncChanges(showToastMsg = true) {
+            if (isSyncing) return;
+            isSyncing = true; setLoadingState(true);
+            if (showToastMsg) showToast('Syncing & Saving...');
+            syncBtn.style.boxShadow = 'none'; // Прибираємо підсвітку з кнопки
+            const fullText = Array.from(ukrainianEditor.childNodes).map(node => node.textContent).join('');
+            try {
+                const selectedModel = localStorage.getItem('selectedModel') || 'gemini';
+                const response = await fetch(`/api/part/${partId}/sync`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ukrainian_text: fullText, model_provider: selectedModel })
+                });
+                if (!response.ok) throw new Error((await response.json()).error || 'Server sync failed');
+                renderEditor(await response.json());
+                if (showToastMsg) showToast('Sync complete!');
+            } catch (error) {
+                showToast(`Sync Error: ${error.message}`);
+            } finally {
+                setLoadingState(false); isSyncing = false;
+            }
+        }
+
+        // Додайте цю нову функцію в блок <script>
+        async function syncSingleSentence(id, newUkText) {
+            if (isSyncing) return;
+            isSyncing = true;
+            setLoadingState(true, false); // true - блокувати, false - не показувати велике завантаження на кнопках
+
+            const ukSpan = ukrainianEditor.querySelector(`.sentence-text[data-id='${id}']`);
+            showToast(`Syncing sentence ${id}...`);
+
+            try {
+                const selectedModel = localStorage.getItem('selectedModel') || 'gemini';
+                const response = await fetch(`/api/part/${partId}/sync_sentence`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        id: id,
+                        uk_text: newUkText,
+                        model_provider: selectedModel
+                    })
+                });
+                if (!response.ok) throw new Error('Sentence sync failed.');
+                const result = await response.json();
+
+                // Оновлюємо англійський текст на сторінці
+                const enSpan = englishEditor.querySelector(`.sentence-text[data-id='${id}']`);
+                if (enSpan) enSpan.textContent = result.new_en_text;
+
+                // Оновлюємо наші дані в пам'яті
+                const sentenceData = contentData.find(s => s.id == id);
+                if(sentenceData) {
+                    sentenceData.uk = newUkText;
+                    sentenceData.en = result.new_en_text;
+                }
+                showToast('Sentence synced!');
+            } catch (error) {
+                showToast(`Error: ${error.message}`);
+            } finally {
+                isSyncing = false;
+                setLoadingState(false);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Замініть стару функцію setLoadingState
+        function setLoadingState(isLoading, showButtonSpinner = true) {
+            if (showButtonSpinner) {
+                translateBtn.setAttribute('aria-busy', isLoading);
+                syncBtn.setAttribute('aria-busy', isLoading);
+            }
+            ukrainianEditor.querySelectorAll('.sentence-text[contenteditable="true"]').forEach(el => {
+                el.contentEditable = !isLoading;
+            });
+        }
+
+        renderEditor(contentData);
+    </script>
+</body>
+</html>
