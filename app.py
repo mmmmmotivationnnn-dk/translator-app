@@ -24,7 +24,11 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'my-super-secret-key-fo
 # --- НАЛАШТУВАННЯ БАЗИ ДАНИХ ---
 # ... (код без змін) ...
 if 'DATABASE_URL' in os.environ:
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://", 1)
+    # 1. Беремо URL з оточення
+    db_url = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://", 1)
+    
+    # 2. Додаємо параметр, який вимагає SSL, але з менш суворими налаштуваннями
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"{db_url}?sslmode=require"
 else:
     DB_PASSWORD = '12345321'
     app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://postgres:{DB_PASSWORD}@localhost/mytranslator_db'
