@@ -43,13 +43,13 @@ gemini_model = genai.GenerativeModel('gemini-2.5-flash')
 
 # OpenRouter (використовує OpenAI клієнт)
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY',
-                               "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")  # Вставте свій ключ OpenRouter
+                               "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")  # Вставте свій ключ OpenRouter
 openrouter_client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=OPENROUTER_API_KEY,
 )
 # Ви можете змінювати модель тут
-OPENROUTER_MODEL_NAME = "x-ai/grok-4-fast:free"
+OPENROUTER_MODEL_NAME = "openai/gpt-oss-20b:free"
 
 
 # --- МОДЕЛІ БАЗИ ДАНИХ ---
